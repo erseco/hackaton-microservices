@@ -1,10 +1,23 @@
-import json
 import hug
 
-router = hug.route.API(__name__)
+from models.ExORepository import ExORepository
+
+rep = ExORepository()
 
 
-@router.get(examples="name=world")
-def hello(body, name: hug.types.text, hug_timer=3):
+@hug.get('/status')
+def status_list():
+    rep = ExORepository()
 
-    return {"message": "Hello %s" % name, "took": float(hug_timer)}
+    return rep.get_statuses()
+
+
+@hug.get('/status/{repo}')
+def status(repo: str, response):
+    try:
+        rep = ExORepository()
+
+        return rep.get_statuses([repo])
+    except IndexError as e:
+        response.status = hug.HTTP_404
+        return e.__str__()
