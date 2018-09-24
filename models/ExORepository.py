@@ -6,6 +6,7 @@ BB_KEY = os.environ.get('BB_KEY', '')
 
 
 class ExORepository:
+
     def load_repositories(self):
         request_url = 'https://api.bitbucket.org/2.0/repositories/exolever/'
 
@@ -37,23 +38,39 @@ class ExORepository:
 
         return list
 
-    def get_statuses(self, repos=None):
+    def get_statuses(self, source_branch, repos=None):
+
         statuses = []
         full_list = self.load_repositories()
 
         if repos:
-            for r in repos:
-                if r not in full_list:
-                    raise IndexError('{} repository not found'.format(r))
+            for repo in repos:
+                if repo not in full_list:
+                    raise IndexError('{} repository not found'.format(repo))
         else:
             repos = full_list
 
-        for r in repos:
-            statuses.append({r: self.__get_repository_status(r)})
+        for repo in repos:
+            statuses.append({repo: self.__get_repository_status(repo, source_branch)})
 
         return statuses
 
-    def __get_repository_status(self, repo):
-        repo_status = 'OK'
-        # TODO: Fetch from BB API for the real status
-        return repo_status
+    def __get_repository_status(self, repo_slug, source_branch):
+
+        request_url = "https://api.bitbucket.org/2.0/repositories/exolever/%s/pipelines/?sort=-created_on" % (repo_slug)
+
+        r = requests.get(request_url, auth=(BB_USER, BB_KEY))
+
+        result = r.json()
+
+        for value in result["values"]:
+
+            target = value.get("target")
+
+            if target.get("ref_name") == source_branch:
+
+                type = value.get("state").get("type")
+
+                return type
+
+        return False
