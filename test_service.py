@@ -5,11 +5,11 @@ import hug
 class TestService:
 
     def test_should_return_single_status(self):
-        data = hug.test.get(service, '/status/exolever-populator')
+        data = hug.test.get(service, '/status/exolever-populator/devel')
         assert data.status == '200 OK'
 
     def test_should_return_statuses_list(self):
-        data = hug.test.get(service, '/status')
+        data = hug.test.get(service, '/status/devel')
         assert data.status == '200 OK'
         assert type(data.data) == list
         assert len(data.data) == 13
